@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Git Client Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: #fff;
+            overflow: hidden;
+        }
+
+        /* Top Menu Bar */
+        .menu-bar {
+            background: #fff;
+            border-bottom: 1px solid #e0e0e0;
+            padding: 4px 8px;
+            font-size: 12px;
+            display: flex;
+            gap: 16px;
+        }
+
+        .menu-item {
+            cursor: pointer;
+            padding: 2px 6px;
+        }
+
+        .menu-item:hover {
+            background: #f0f0f0;
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            background: #f5f5f5;
+            border-bottom: 1px solid #d0d0d0;
+            display: flex;
+            align-items: center;
+            padding: 4px 4px 0 4px;
+            overflow-x: auto;
+        }
+
+        .tab {
+            background: #e8e8e8;
+            padding: 6px 24px 6px 12px;
+            border: 1px solid #d0d0d0;
+            border-bottom: none;
+            margin-right: 2px;
+            font-size: 12px;
+            cursor: pointer;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .tab.active {
+            background: #fff;
+            border-bottom: 1px solid #fff;
+            margin-bottom: -1px;
+        }
+
+        .tab-close {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        .tab-add {
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        /* Action Bar */
+        .action-bar {
+            background: #fff;
+            border-bottom: 1px solid #d0d0d0;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-group {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .action-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 4px 8px;
+            cursor: pointer;
+            font-size: 11px;
+            border: 1px solid transparent;
+            border-radius: 3px;
+        }
+
+        .action-btn:hover {
+            background: #f0f0f0;
+            border-color: #d0d0d0;
+        }
+
+        .action-icon {
+            font-size: 20px;
+            margin-bottom: 2px;
+        }
+
+        .action-btn.has-badge {
+            position: relative;
+        }
+
+        .badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: #1890ff;
+            color: white;
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            font-size: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .separator {
+            width: 1px;
+            height: 40px;
+            background: #d0d0d0;
+            margin: 0 4px;
+        }
+
+        .filter-group {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        .filter-btn {
+            padding: 4px 8px;
+            font-size: 11px;
+            border: 1px solid #d0d0d0;
+            border-radius: 3px;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .filter-btn:hover {
+            background: #f0f0f0;
+        }
+
+        .search-input {
+            padding: 4px 8px;
+            border: 1px solid #d0d0d0;
+            border-radius: 3px;
+            font-size: 11px;
+        }
+
+        /* Main Container */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 120px);
+        }
+
+        /* Left Sidebar */
+        .left-sidebar {
+            width: 220px;
+            background: #f9f9f9;
+            border-right: 1px solid #d0d0d0;
+            overflow-y: auto;
+        }
+
+        .sidebar-section {
+            padding: 8px;
+        }
+
+        .sidebar-header {
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px;
+            margin-bottom: 4px;
+            color: #333;
+        }
+
+        .sidebar-item {
+            padding: 4px 8px;
+            font-size: 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .sidebar-item:hover {
+            background: #e8e8e8;
+        }
+
+        .sidebar-item.active {
+            background: #1890ff;
+            color: white;
+        }
+
+        .sidebar-item .badge {
+            background: #1890ff;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 10px;
+        }
+
+        .sidebar-item.active .badge {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        .sidebar-tree-item {
+            padding: 4px 8px 4px 24px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        .sidebar-tree-item:hover {
+            background: #e8e8e8;
+        }
+
+        .sidebar-tree-item.active {
+            background: #1890ff;
+            color: white;
+        }
+
+        /* Commit Graph */
+        .commit-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .commit-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+
+        .commit-table thead {
+            background: #f5f5f5;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .commit-table th {
+            padding: 6px 8px;
+            text-align: left;
+            border-bottom: 1px solid #d0d0d0;
+            font-weight: 600;
+        }
+
+        .commit-table td {
+            padding: 4px 8px;
+            border-bottom: 1px solid #f0f0f0;
+            vertical-align: top;
+        }
+
+        .commit-row {
+            cursor: pointer;
+            height: 28px;
+        }
+
+        .commit-row:hover {
+            background: #f5f5f5;
+        }
+
+        .commit-row.selected {
+            background: #1890ff;
+            color: white;
+        }
+
+        .commit-graph {
+            width: 200px;
+            position: relative;
+            height: 28px;
+        }
+
+        .graph-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .commit-message {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 600px;
+        }
+
+        .commit-date {
+            white-space: nowrap;
+        }
+
+        .commit-author {
+            white-space: nowrap;
+            color: #666;
+        }
+
+        .commit-row.selected .commit-author {
+            color: white;
+        }
+
+        .commit-hash {
+            font-family: 'Courier New', monospace;
+            color: #999;
+        }
+
+        .commit-row.selected .commit-hash {
+            color: white;
+        }
+
+        /* Bottom Panel */
+        .bottom-panel {
+            border-top: 1px solid #d0d0d0;
+            display: flex;
+            flex-direction: column;
+            height: 300px;
+        }
+
+        .bottom-tabs {
+            background: #f5f5f5;
+            display: flex;
+            border-bottom: 1px solid #d0d0d0;
+        }
+
+        .bottom-tab {
+            padding: 6px 16px;
+            font-size: 12px;
+            cursor: pointer;
+            border-right: 1px solid #d0d0d0;
+        }
+
+        .bottom-tab.active {
+            background: #fff;
+            border-bottom: 2px solid #1890ff;
+        }
+
+        .bottom-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+
+        .commit-detail {
+            width: 40%;
+            border-right: 1px solid #d0d0d0;
+            padding: 12px;
+            overflow-y: auto;
+            font-size: 12px;
+        }
+
+        .detail-row {
+            margin-bottom: 8px;
+        }
+
+        .detail-label {
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 2px;
+        }
+
+        .detail-value {
+            color: #333;
+        }
+
+        .code-viewer {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .code-header {
+            background: #f5f5f5;
+            padding: 6px 12px;
+            border-bottom: 1px solid #d0d0d0;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-content {
+            flex: 1;
+            overflow: auto;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 12px;
+            line-height: 1.5;
+            padding: 8px;
+        }
+
+        .code-line {
+            display: flex;
+        }
+
+        .line-number {
+            width: 60px;
+            text-align: right;
+            padding-right: 12px;
+            color: #999;
+            user-select: none;
+        }
+
+        .line-content {
+            flex: 1;
+        }
+
+        .line-added {
+            background: #e6ffec;
+        }
+
+        .line-removed {
+            background: #ffe6e6;
+        }
+
+        .diff-indicator {
+            color: #28a745;
+            margin-right: 4px;
+        }
+
+        .diff-indicator.removed {
+            color: #dc3545;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a1a1a1;
+        }
+    </style>
+</head>
+<body>
+    <!-- Menu Bar -->
+    <div class="menu-bar">
+        <div class="menu-item">文件(F)</div>
+        <div class="menu-item">编辑(E)</div>
+        <div class="menu-item">查看(V)</div>
+        <div class="menu-item">仓库(R)</div>
+        <div class="menu-item">操作(A)</div>
+        <div class="menu-item">工具(T)</div>
+        <div class="menu-item">帮助(H)</div>
+    </div>
+
+    <!-- Tab Bar -->
+    <div class="tab-bar">
+        <div class="tab">cias-vas-access</div>
+        <div class="tab">cias-vas-order-service</div>
+        <div class="tab active">cias-order-center<span class="tab-close">×</span></div>
+        <div class="tab">cias-product-center</div>
+        <div class="tab">cias-right-center</div>
+        <div class="tab">cias-vas-account</div>
+        <div class="tab">cias-vas-common</div>
+        <div class="tab">cias-vas-dispatch-center</div>
+        <div class="tab">cias-vas-partner</div>
+        <div class="tab">cias-vas-points</div>
+        <div class="tab-add">+</div>
+    </div>
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <div class="action-group">
+            <div class="action-btn">
+                <div class="action-icon">⬆️</div>
+                <div>提交</div>
+            </div>
+            <div class="action-btn has-badge">
+                <div class="action-icon">⬇️</div>
+                <div class="badge">2</div>
+                <div>拉取</div>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon">️</div>
+                <div>推送</div>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon">⬇️</div>
+                <div>获取</div>
+            </div>
+        </div>
+        <div class="separator"></div>
+        <div class="action-group">
+            <div class="action-btn">
+                <div class="action-icon"></div>
+                <div>分支</div>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon">🔀</div>
+                <div>合并</div>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon">💾</div>
+                <div>贮藏</div>
+            </div>
+            <div class="action-btn">
+                <div class="action-icon">🏷️</div>
+                <div>标签</div>
+            </div>
+        </div>
+        <div class="separator"></div>
+        <div class="filter-group">
+            <div class="filter-btn">Git工作流</div>
+            <div class="filter-btn">远端</div>
+            <div class="filter-btn">命令行模式</div>
+            <div class="filter-btn">资源管理器</div>
+            <div class="filter-btn">⚙️ 设置</div>
+            <div style="margin-left: auto;">
+                <input type="text" class="search-input" placeholder="Author Name" style="width: 150px;">
+            </div>
+            <div class="filter-btn">跳转到:</div>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="main-container">
+        <!-- Left Sidebar -->
+        <div class="left-sidebar">
+            <div class="sidebar-section">
+                <div class="sidebar-header">WORKSPACE</div>
+                <div class="sidebar-item active">History</div>
+                <div class="sidebar-item">Search</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-header">🔍 搜索</div>
+                <input type="text" class="search-input" style="width: 100%;">
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-header"> 分支</div>
+                <div class="sidebar-tree-item">develop</div>
+                <div class="sidebar-tree-item">master</div>
+                <div class="sidebar-tree-item active">○ release <span class="badge">21</span></div>
+                <div class="sidebar-tree-item" style="padding-left: 32px;">v3.12.2.3</div>
+                <div class="sidebar-tree-item" style="padding-left: 32px;">v3.12.3</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-header">🏷️ 标签</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-header">🌐 远程</div>
+                <div class="sidebar-tree-item">▸ origin</div>
+            </div>
+            <div class="sidebar-section">
+                <div class="sidebar-header">📦 贮藏</div>
+            </div>
+        </div>
+
+        <!-- Commit Container -->
+        <div class="commit-container">
+            <table class="commit-table">
+                <thead>
+                    <tr>
+                        <th style="width: 200px;">图谱</th>
+                        <th>描述</th>
+                        <th style="width: 150px;">日期</th>
+                        <th style="width: 250px;">作者</th>
+                        <th style="width: 80px;">提交</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="commit-row selected">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <!-- release分支 - 红色 -->
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <!-- v3.12.2.3分支 - 绿色 -->
+                                <line x1="80" y1="0" x2="80" y2="14" stroke="#2ecc71" stroke-width="3"/>
+                                <path d="M 80,14 Q 60,14 40,14" fill="none" stroke="#2ecc71" stroke-width="2"/>
+                                <!-- 节点 -->
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                                <circle cx="80" cy="14" r="6" fill="#2ecc71" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                            <span style="position: absolute; left: 100px; top: 8px; color: #e74c3c; font-size: 11px; font-weight: 600;">release</span>
+                        </td>
+                        <td class="commit-message">
+                            <span style="background: #e74c3c; color: white; padding: 1px 6px; border-radius: 3px; font-size: 11px;">origin/release</span>
+                            Merge branch 'v3.12.2.3' into release
+                        </td>
+                        <td class="commit-date">2026-05-14 11:46</td>
+                        <td class="commit-author">yangzz <yangzhuanzhuang@cias.cn></td>
+                        <td class="commit-hash">34f01d3ccf</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <line x1="80" y1="0" x2="80" y2="28" stroke="#2ecc71" stroke-width="3"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                                <circle cx="80" cy="14" r="6" fill="#2ecc71" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                            <span style="position: absolute; left: 100px; top: 8px; color: #2ecc71; font-size: 11px;">v3.12.2.3</span>
+                        </td>
+                        <td class="commit-message">
+                            <span style="background: #e74c3c; color: white; padding: 1px 6px; border-radius: 3px; font-size: 11px;">v3.12.2.3</span>
+                            代驾""代表新车，派单不给下游
+                        </td>
+                        <td class="commit-date">2026-05-14 11:46</td>
+                        <td class="commit-author">yangzz <yangzhuanzhuang@cias.cn></td>
+                        <td class="commit-hash">4cc3bc359f</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <line x1="80" y1="0" x2="80" y2="14" stroke="#2ecc71" stroke-width="3"/>
+                                <path d="M 80,14 Q 60,14 40,14" fill="none" stroke="#2ecc71" stroke-width="2"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">Merge branch 'v3.12.3' into release</td>
+                        <td class="commit-date">2026-05-14 11:31</td>
+                        <td class="commit-author">zhenghong <zhenghong@cias.cn></td>
+                        <td class="commit-hash">00a5b23af1</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <line x1="80" y1="0" x2="80" y2="28" stroke="#2ecc71" stroke-width="3"/>
+                                <circle cx="80" cy="14" r="6" fill="#2ecc71" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                            <span style="position: absolute; left: 100px; top: 8px; color: #2ecc71; font-size: 11px;">v3.12.3</span>
+                        </td>
+                        <td class="commit-message">v3.12.3: fix: 1030371 鼎和特种车识别保单号 不自动初审</td>
+                        <td class="commit-date">2026-05-14 11:31</td>
+                        <td class="commit-author">zhenghong <zhenghong@cias.cn></td>
+                        <td class="commit-hash">d40e5499a9</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">v3.12.3: fix: 1030371 鼎和特种车识别保单号 不自动初审</td>
+                        <td class="commit-date">2026-05-14 11:30</td>
+                        <td class="commit-author">zhenghong <zhenghong@cias.cn></td>
+                        <td class="commit-hash">727b38cb40</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <line x1="80" y1="0" x2="80" y2="14" stroke="#2ecc71" stroke-width="3"/>
+                                <path d="M 80,14 Q 60,14 40,14" fill="none" stroke="#2ecc71" stroke-width="2"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">Merge branch 'v3.12.2.3' into release</td>
+                        <td class="commit-date">2026-05-14 11:07</td>
+                        <td class="commit-author">yangzz <yangzhuanzhuang@cias.cn></td>
+                        <td class="commit-hash">3a9b9ece76</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">鼎和特种车收退款单调整</td>
+                        <td class="commit-date">2026-05-14 11:07</td>
+                        <td class="commit-author">yangzz <yangzhuanzhuang@cias.cn></td>
+                        <td class="commit-hash">21579ae31d</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <line x1="80" y1="0" x2="80" y2="14" stroke="#2ecc71" stroke-width="3"/>
+                                <path d="M 80,14 Q 60,14 40,14" fill="none" stroke="#2ecc71" stroke-width="2"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">Merge remote-tracking branch 'origin/v3.12.3' into release</td>
+                        <td class="commit-date">2026-05-14 11:01</td>
+                        <td class="commit-author">huangzhen <huangzhen@cias.cn></td>
+                        <td class="commit-hash">4590e9bafa</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <line x1="80" y1="0" x2="80" y2="28" stroke="#2ecc71" stroke-width="3"/>
+                                <circle cx="80" cy="14" r="6" fill="#2ecc71" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">v3.12.3 [fix] 退款聚合改用rootGrantId替代sourceGrantId #1040322</td>
+                        <td class="commit-date">2026-05-14 10:59</td>
+                        <td class="commit-author">huangzhen <huangzhen@cias.cn></td>
+                        <td class="commit-hash">e72f0247ad</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <line x1="80" y1="0" x2="80" y2="14" stroke="#2ecc71" stroke-width="3"/>
+                                <path d="M 80,14 Q 60,14 40,14" fill="none" stroke="#2ecc71" stroke-width="2"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">Merge branch 'v3.12.2.3' into release</td>
+                        <td class="commit-date">2026-05-14 10:50</td>
+                        <td class="commit-author">yangzz <yangzhuanzhuang@cias.cn></td>
+                        <td class="commit-hash">155b1fa50d</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">鼎和特种车收退款单调整</td>
+                        <td class="commit-date">2026-05-14 10:44</td>
+                        <td class="commit-author">yangzz <yangzhuanzhuang@cias.cn></td>
+                        <td class="commit-hash">918e2f378b</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <line x1="80" y1="0" x2="80" y2="14" stroke="#2ecc71" stroke-width="3"/>
+                                <path d="M 80,14 Q 60,14 40,14" fill="none" stroke="#2ecc71" stroke-width="2"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">Merge branch 'v3.12.3_zhenghong' into release</td>
+                        <td class="commit-date">2026-05-14 10:39</td>
+                        <td class="commit-author">zhenghong <zhenghong@cias.cn></td>
+                        <td class="commit-hash">cc5d74e28d</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <!-- develop分支 - 橙色 -->
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#f39c12" stroke-width="3"/>
+                                <!-- v3.12.3_zhenghong分支 - 紫色 -->
+                                <line x1="80" y1="0" x2="80" y2="14" stroke="#9b59b6" stroke-width="3"/>
+                                <path d="M 80,14 Q 60,14 40,14" fill="none" stroke="#9b59b6" stroke-width="2"/>
+                                <circle cx="40" cy="14" r="6" fill="#f39c12" stroke="#fff" stroke-width="2"/>
+                                <circle cx="80" cy="14" r="6" fill="#9b59b6" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                            <span style="position: absolute; left: 100px; top: 8px; color: #9b59b6; font-size: 11px;">develop</span>
+                        </td>
+                        <td class="commit-message">
+                            <span style="background: #9b59b6; color: white; padding: 1px 6px; border-radius: 3px; font-size: 11px;">origin/v3.12.3_zhenghong</span>
+                            Merge branch 'v3.12.3_zhenghong' into develop
+                        </td>
+                        <td class="commit-date">2026-05-14 10:39</td>
+                        <td class="commit-author">zhenghong <zhenghong@cias.cn></td>
+                        <td class="commit-hash">637e595831</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#f39c12" stroke-width="3"/>
+                                <circle cx="40" cy="14" r="6" fill="#f39c12" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">v3.12.4 : feature 1039409 智能外呼首联支持 特殊首联</td>
+                        <td class="commit-date">2026-05-14 10:38</td>
+                        <td class="commit-author">zhenghong <zhenghong@cias.cn></td>
+                        <td class="commit-hash">0c09a104b2</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">Merge branch 'v3.12.2.3' into release</td>
+                        <td class="commit-date">2026-05-14 10:04</td>
+                        <td class="commit-author">huangzhen <huangzhen@cias.cn></td>
+                        <td class="commit-hash">fab6cacce7</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">Merge remote-tracking branch 'origin/v3.12.3' into release</td>
+                        <td class="commit-date">2026-05-14 10:04</td>
+                        <td class="commit-author">huangzhen <huangzhen@cias.cn></td>
+                        <td class="commit-hash">e3f802adfc</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <line x1="80" y1="0" x2="80" y2="14" stroke="#2ecc71" stroke-width="3"/>
+                                <path d="M 80,14 Q 60,14 40,14" fill="none" stroke="#2ecc71" stroke-width="2"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">v3.12.3 [fix] REFUND日志usedPointsSnapshot切归因口径 #1040322</td>
+                        <td class="commit-date">2026-05-14 10:03</td>
+                        <td class="commit-author">huangzhen <huangzhen@cias.cn></td>
+                        <td class="commit-hash">000cd1e8cf</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">Merge branch 'v3.12.3_zhenghong' into release</td>
+                        <td class="commit-date">2026-05-14 09:59</td>
+                        <td class="commit-author">zhenghong <zhenghong@cias.cn></td>
+                        <td class="commit-hash">d610510ed7</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#f39c12" stroke-width="3"/>
+                                <circle cx="40" cy="14" r="6" fill="#f39c12" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">Merge branch 'v3.12.3_zhenghong' into develop</td>
+                        <td class="commit-date">2026-05-14 09:59</td>
+                        <td class="commit-author">zhenghong <zhenghong@cias.cn></td>
+                        <td class="commit-hash">711c0afd0d</td>
+                    </tr>
+                    <tr class="commit-row">
+                        <td class="commit-graph">
+                            <svg class="graph-container" viewBox="0 0 200 28">
+                                <line x1="40" y1="0" x2="40" y2="28" stroke="#e74c3c" stroke-width="3"/>
+                                <circle cx="40" cy="14" r="6" fill="#e74c3c" stroke="#fff" stroke-width="2"/>
+                            </svg>
+                        </td>
+                        <td class="commit-message">Merge remote-tracking branch 'origin/v3.12.3' into release</td>
+                        <td class="commit-date">2026-05-14 09:56</td>
+                        <td class="commit-author">huangzhen <huangzhen@cias.cn></td>
+                        <td class="commit-hash">7046485440</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Bottom Panel -->
+            <div class="bottom-panel">
+                <div class="bottom-tabs">
+                    <div class="bottom-tab">已按照文件状态排序</div>
+                    <div class="bottom-tab active">1 文件</div>
+                </div>
+                <div class="bottom-content">
+                    <div class="commit-detail">
+                        <div class="detail-row">
+                            <div class="detail-label">提交：</div>
+                            <div class="detail-value">34f01d3ccf61aee612f5bd87da4c4e14efdb9088 [34f01d3]</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">父级：</div>
+                            <div class="detail-value">00a5b23af1, 4cc3bc359f</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">作者：</div>
+                            <div class="detail-value">yangzz <yangzhuanzhuang@cias.cn></div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">日期：</div>
+                            <div class="detail-value">2026年5月14日 11:46:53</div>
+                        </div>
+                        <div class="detail-row">
+                            <div class="detail-label">提交者：</div>
+                            <div class="detail-value">yangzz</div>
+                        </div>
+                        <div class="detail-row" style="margin-top: 16px;">
+                            <div class="detail-value">Merge branch 'v3.12.2.3' into release</div>
+                        </div>
+                    </div>
+                    <div class="code-viewer">
+                        <div class="code-header">
+                            <span> cias-vas-order-service/src/main/java/com/cias/vas/task/service/impl/TaskBaseServiceImpl.java</span>
+                            <div>
+                                <button class="filter-btn">⚙️</button>
+                                <button class="filter-btn">...</button>
+                                <button class="filter-btn">回退区块</button>
+                            </div>
+                        </div>
+                        <div class="code-content">
+                            <div style="margin-bottom: 8px; font-weight: 600;">块 1 ： 行 1043-1051</div>
+                            <div class="code-line">
+                                <div class="line-number">1043</div>
+                                <div class="line-content">            if (null != dictCodeDTO) {</div>
+                            </div>
+                            <div class="code-line">
+                                <div class="line-number">1044</div>
+                                <div class="line-content">                rescueReqDTO.setCarNo(null);</div>
+                            </div>
+                            <div class="code-line">
+                                <div class="line-number">1045</div>
+                                <div class="line-content">            }</div>
+                            </div>
+                            <div class="code-line line-added">
+                                <div class="line-number">1046</div>
+                                <div class="line-content"><span class="diff-indicator">+</span>            if(StringUtils.equalsAny(rescueReqDTO.getCarNo(),"*-*","*_","*=*")){</div>
+                            </div>
+                            <div class="code-line line-added">
+                                <div class="line-number">1047</div>
+                                <div class="line-content"><span class="diff-indicator">+</span>                rescueReqDTO.setCarNo(null);</div>
+                            </div>
+                            <div class="code-line line-added">
+                                <div class="line-number">1048</div>
+                                <div class="line-content"><span class="diff-indicator">+</span>            }</div>
+                            </div>
+                            <div class="code-line">
+                                <div class="line-number">1049</div>
+                                <div class="line-content">            }</div>
+                            </div>
+                            <div class="code-line">
+                                <div class="line-number">1050</div>
+                                <div class="line-content">            ...</div>
+                            </div>
+                            <div class="code-line">
+                                <div class="line-number">1051</div>
+                                <div class="line-content">            rescueReqDTO.setServiceItem(ProductTypeConvertEnum.getOldCodeByNew(orderDetailDTO.getProductCategoryCode()));</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

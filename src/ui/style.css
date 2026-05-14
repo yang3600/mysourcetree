@@ -1,0 +1,351 @@
+/* MySourceTree - GTK4 CSS Stylesheet
+   Matches the git-interface.html design */
+
+/* ── Window-level ── */
+window {
+    background-color: #ffffff;
+}
+
+/* ── Menu Bar ── */
+.menu-bar {
+    background: #ffffff;
+    border-bottom: 1px solid #e0e0e0;
+    padding: 2px 4px;
+    font-size: 12px;
+}
+
+.menu-bar > menubar > menuitem {
+    padding: 2px 8px;
+    font-size: 12px;
+}
+
+.menu-bar > menubar > menuitem:hover {
+    background: #f0f0f0;
+}
+
+/* ── Tab Bar ── */
+.tab-bar {
+    background: #f5f5f5;
+    border-bottom: 1px solid #d0d0d0;
+    padding: 2px 2px 0 2px;
+}
+
+.tab-bar button {
+    background: #e8e8e8;
+    border: 1px solid #d0d0d0;
+    border-bottom: none;
+    padding: 4px 20px 4px 10px;
+    font-size: 12px;
+    margin-right: 2px;
+}
+
+.tab-bar button.active-tab {
+    background: #ffffff;
+    border-bottom: 1px solid #ffffff;
+    margin-bottom: -1px;
+}
+
+.tab-bar button.add-tab {
+    padding: 4px 10px;
+    font-size: 14px;
+    border: none;
+    background: transparent;
+}
+
+/* ── Action Bar ── */
+.action-bar {
+    background: #ffffff;
+    border-bottom: 1px solid #d0d0d0;
+    padding: 6px 8px;
+}
+
+.action-btn {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 3px;
+    padding: 2px 6px;
+    font-size: 11px;
+}
+
+.action-btn:hover {
+    background: #f0f0f0;
+    border-color: #d0d0d0;
+}
+
+.action-btn image {
+    font-size: 18px;
+}
+
+.filter-btn {
+    padding: 2px 8px;
+    font-size: 11px;
+    border: 1px solid #d0d0d0;
+    border-radius: 3px;
+    background: #ffffff;
+}
+
+.filter-btn:hover {
+    background: #f0f0f0;
+}
+
+/* ── Left Sidebar ── */
+.sidebar {
+    background: #f9f9f9;
+    border-right: 1px solid #d0d0d0;
+    padding: 4px;
+}
+
+.sidebar-header {
+    font-size: 12px;
+    font-weight: 600;
+    color: #333333;
+    padding: 4px;
+    margin-top: 4px;
+}
+
+.sidebar-item {
+    font-size: 12px;
+    padding: 3px 8px;
+    background: transparent;
+    border: none;
+    border-radius: 0;
+}
+
+.sidebar-item:hover {
+    background: #e8e8e8;
+}
+
+.sidebar-item:checked,
+.sidebar-item.active {
+    background: #1890ff;
+    color: white;
+}
+
+.sidebar-tree-item {
+    font-size: 12px;
+    padding: 3px 8px 3px 20px;
+}
+
+.sidebar-tree-item:hover {
+    background: #e8e8e8;
+}
+
+.sidebar-tree-item:checked,
+.sidebar-tree-item.active {
+    background: #1890ff;
+    color: white;
+}
+
+.sidebar-child-item {
+    font-size: 12px;
+    padding: 3px 8px 3px 30px;
+}
+
+/* ── Commit View ── */
+.commit-view {
+    background: #ffffff;
+}
+
+.commit-view header {
+    background: #f5f5f5;
+    border-bottom: 1px solid #d0d0d0;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 8px;
+}
+
+.commit-view row {
+    padding: 2px 8px;
+    font-size: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    min-height: 26px;
+}
+
+.commit-view row:hover {
+    background: #f5f5f5;
+}
+
+.commit-view row:selected {
+    background: #1890ff;
+    color: white;
+}
+
+.commit-graph {
+    min-width: 200px;
+}
+
+.commit-message {
+    font-size: 12px;
+}
+
+.commit-message label {
+    font-size: 12px;
+}
+
+.commit-date {
+    font-size: 12px;
+    min-width: 140px;
+}
+
+.commit-author {
+    font-size: 12px;
+    color: #666666;
+    min-width: 240px;
+}
+
+.commit-hash {
+    font-family: monospace;
+    font-size: 12px;
+    color: #999999;
+    min-width: 80px;
+}
+
+/* Branch tag badges */
+.branch-tag {
+    font-size: 10px;
+    padding: 1px 5px;
+    border-radius: 3px;
+    color: white;
+}
+
+/* ── Bottom Panel ── */
+.bottom-panel {
+    border-top: 1px solid #d0d0d0;
+    background: #ffffff;
+}
+
+.bottom-tabs {
+    background: #f5f5f5;
+    border-bottom: 1px solid #d0d0d0;
+    padding: 0;
+}
+
+.bottom-tab {
+    padding: 5px 14px;
+    font-size: 12px;
+    border-right: 1px solid #d0d0d0;
+    background: transparent;
+}
+
+.bottom-tab:checked,
+.bottom-tab.active {
+    background: #ffffff;
+    border-bottom: 2px solid #1890ff;
+}
+
+/* ── Detail Panel ── */
+.detail-panel {
+    background: #ffffff;
+    padding: 10px;
+}
+
+.detail-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: #666666;
+}
+
+.detail-value {
+    font-size: 12px;
+    color: #333333;
+}
+
+/* ── Code / Diff Viewer ── */
+.code-viewer {
+    background: #ffffff;
+}
+
+.code-header {
+    background: #f5f5f5;
+    padding: 4px 10px;
+    border-bottom: 1px solid #d0d0d0;
+    font-size: 12px;
+}
+
+.code-content {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+    background: #ffffff;
+}
+
+.code-content textview {
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 12px;
+}
+
+/* ── Scrollbars ── */
+scrolledwindow undershoot.top,
+scrolledwindow undershoot.bottom,
+scrolledwindow undershoot.left,
+scrolledwindow undershoot.right {
+    background: none;
+}
+
+scrollbar slider {
+    background: #c1c1c1;
+    border-radius: 4px;
+    min-width: 8px;
+    min-height: 8px;
+}
+
+scrollbar slider:hover {
+    background: #a1a1a1;
+}
+
+/* ── Separators ── */
+.separator-v {
+    background: #d0d0d0;
+    min-width: 1px;
+}
+
+/* ── Buttons ── */
+button.flat {
+    background: transparent;
+    border: none;
+}
+
+button.flat:hover {
+    background: #f0f0f0;
+}
+
+/* ── Entry / Search ── */
+entry.search {
+    font-size: 11px;
+    padding: 3px 6px;
+    border: 1px solid #d0d0d0;
+    border-radius: 3px;
+}
+
+/* ── Notebook tabs ── */
+notebook header {
+    background: #f5f5f5;
+    border-bottom: 1px solid #d0d0d0;
+}
+
+notebook tab {
+    background: #e8e8e8;
+    border: 1px solid #d0d0d0;
+    border-bottom: none;
+    padding: 4px 20px 4px 10px;
+    font-size: 12px;
+}
+
+notebook tab:checked {
+    background: #ffffff;
+    border-bottom: 1px solid #ffffff;
+}
+
+notebook tab button {
+    margin-left: 4px;
+    padding: 0;
+    min-width: 16px;
+    min-height: 16px;
+}
+
+/* ── Status bar ── */
+.status-bar {
+    background: #f5f5f5;
+    border-top: 1px solid #d0d0d0;
+    padding: 2px 8px;
+    font-size: 11px;
+}

@@ -76,6 +76,14 @@ class GitRepository:
         index.remove(filepath)
         index.write()
 
+    def unstage_all(self):
+        if self.repo is None:
+            raise ValueError("No repository opened")
+
+        index = self.repo.index
+        index.clear()
+        index.write()
+
     def commit(self, message, author_name=None, author_email=None):
         if self.repo is None:
             raise ValueError("No repository opened")
@@ -175,6 +183,108 @@ class GitRepository:
 
         diff = self.repo.diff('HEAD', filepath)
         return diff
+
+    def pull(self, remote_name="origin", branch=None):
+        if self.repo is None:
+            raise ValueError("No repository opened")
+
+        if branch is None:
+            branch = self.repo.head.shorthand
+
+        remote = self.repo.remotes[remote_name]
+        remote.fetch()
+
+        remote_ref = f"refs/remotes/{remote_name}/{branch}"
+        if remote_ref not in self.repo.references:
+            raise ValueError(f"Remote branch not found: {remote_name}/{branch}")
+
+        remote_commit = self.repo.references[remote_ref].peel()
+        self.repo.merge(remote_commit.id)
+
+        return True
+
+    def push(self, remote_name="origin", branch=None):
+        if self.repo is None:
+            raise ValueError("No repository opened")
+
+        if branch is None:
+            branch = self.repo.head.shorthand
+
+        remote = self.repo.remotes[remote_name]
+        remote.push([f"refs/heads/{branch}"])
+
+        return True
+
+    def fetch(self, remote_name="origin"):
+        if self.repo is None:
+            raise ValueError("No repository opened")
+
+        remote = self.repo.remotes[remote_name]
+        remote.fetch()
+
+        return True
+
+    def merge(self, branch_name):
+        if self.repo is None:
+            raise ValueError("No repository opened")
+
+        if branch_name not in self.repo.branches:
+            raise ValueError(f"Branch not found: {branch_name}")
+
+        branch = self.repo.branches[branch_name]
+        commit = branch.peel()
+        self.repo.merge(commit.id)
+
+        return True
+
+    def stash(self, message="WIP"):
+        if self.repo is None:
+            raise ValueError("No repository opened")
+
+        self.repo.stash()
+        return True
+
+    def create_tag(self, name, message=None, commit_id=None):
+        if self.repo is None:
+            raise ValueError("No repository opened")
+
+        if commit_id is None:
+            commit = self.repo.head.peel()
+        else:
+            commit = self.repo.get(commit_id)
+
+        if message:
+            tag = self.repo.create_tag(
+                name,
+                commit.id,
+                pygit2.GIT_OBJ_COMMIT,
+                self._get_signature(),
+                message
+            )
+        else:
+            tag = self.repo.create_tag(
+                name,
+                commit.id,
+                pygit2.GIT_OBJ_COMMIT
+            )
+
+        return tag
+
+    def get_tags(self):
+        if self.repo is None:
+            raise ValueError("No repository opened")
+
+        tags = []
+        for tag in self.repo.tags:
+            tags.append(tag)
+
+        return tags
+
+    def _get_signature(self):
+        config = self.repo.config
+        name = config.get("user.name", "Unknown")
+        email = config.get("user.email", "unknown@example.com")
+        return pygit2.Signature(name, email)
 
     def is_repository(self, path):
         git_path = os.path.join(path, '.git')
